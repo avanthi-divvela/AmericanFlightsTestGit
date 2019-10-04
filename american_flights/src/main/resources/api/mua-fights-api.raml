@@ -1,0 +1,95 @@
+#%RAML 1.0
+version: v1
+
+title: MUA Flights API
+description: |
+  This document represents the **system API** for **_MUA  Flights_**. At present, it only contains resources and methods supported by American, united and delta Fights API. This specification will eventually be updated to support resource and method for all other airlines that are hosted at Mule United Airport.
+protocols:
+  - HTTP
+  - HTTPS
+
+baseUri: http://americanflightsv1.us-e2.cloudhub.io/api
+
+types:
+  Flight: !include datatypes/Flight.raml
+/flights:
+  get:
+    description: retrieves a list of all flights
+    queryParameters:
+      code?:
+        description: represents 3 letter destination code such as LAX, CLE, SFO
+        enum: ['CLE', 'LAX', 'SFO','PDX','PDF', 'ALL']
+        type: string
+        minLength: 3
+        maxLength: 3
+      airline:
+        description: represents vendor or carrier name
+        enum: [american, delta, united, all]
+        type: string
+        required: false
+    responses:
+      "200":
+        description: success
+        body:
+          application/json:
+            description: represents collection/array of flight objects
+            type: Flight[]
+            examples:
+              output: !include examples/flightsExample.raml
+  post:
+    description: add/create new flight to the existing flights
+    body:
+      application/json:
+        examples: 
+          output: !include examples/flightNoIDExample.raml
+        type:
+          - Flight
+    responses:
+      "201":
+        description: success
+        body:
+          application/json:
+            example:
+              strict: true
+              value:
+                message: flight created successfully (not really)
+            type: object
+/flights/{ID}:
+  get:
+    description: retrieve a flight based on its unique id
+    responses:
+      "200":
+        description: success
+        body:
+          application/json:
+            description: Represents a flight object
+            examples:
+              output: !include examples/flightExample.raml
+            type:
+              - Flight
+  delete:
+    responses:
+      "200":
+        description: success
+        body:
+          application/json:
+            examples:
+              message: Flights deleted (not really)
+  put:
+    body:
+      application/json:
+        examples:
+          output: !include examples/flightNoIDExample.raml
+        type:
+          - Flight
+    responses:
+      200:
+        body:
+          application/json:
+            examples:
+              message: flight updated (not really)
+  uriParameters:
+    ID:
+      description: represents unique flight id between 1 and 11
+      example: "3"
+      type: string

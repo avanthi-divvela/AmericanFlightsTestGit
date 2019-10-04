@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1beb91a2-0b93-46da-950e-4fe247a90b8b" >
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="d96c3ab9-48d3-46a4-ae99-cab0f2b69228" file="flights-${env}-config.yaml" />
+	<db:config name="american_database_connector" doc:name="Database Config" doc:id="f7449c33-5a61-4322-8986-91c172f29373" >
+		<db:generic-connection url="${db.url}" driverClassName="${db.driverClass}"/>
+	</db:config>
+	<global-property doc:name="Global Property" doc:id="ea4deebf-572c-4974-84a7-cdd13def8e8b" name="env" value="QA" />
+	<http:request-config name="united_REST_connector" doc:name="HTTP Request configuration" doc:id="5db9c885-4479-4ab8-bbff-bad61ed439a1" basePath="${united.rest.basepath}" >
+		<http:request-connection host="${united.rest.host}" port="${united.rest.port}" />
+	</http:request-config>
+	<wsc:config name="Delta_SOAP_Connector" doc:name="Web Service Consumer Config" doc:id="07ff9d36-0b9e-4f91-be04-50cc70dd0e0d" >
+		<wsc:connection wsdlLocation="${delta.soap.wsdl}" service="${delta.soap.service}" port="${delta.soap.port}" address="${delta.soap.address}" />
+	</wsc:config>
+	<configuration doc:name="Configuration" doc:id="8746da1f-38fb-4416-b85a-6c89b29137f2" defaultErrorHandler-ref="MyGlobalErrrorHandler" />
+	<error-handler name="MyGlobalErrrorHandler" doc:id="16d2334d-09bf-4889-82bf-1e3f37051335" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On WS_CONNECTIVITY Error Propagate" doc:id="28e6e7a0-2263-4ec5-b6e4-d448d9fc1e4d" when="#[error causedBy('WSC:CONNECTIVITY')]">
+			<set-payload value="#[[
+	{
+		errMsg: 'Global Resources : On All Other errrors',
+		errDesc: error.description,
+		errType: error.errorType.namespace as String default 'NO-NS' ++ error.errorType.identifier as String default 'NO-ID'
+	}
+]]" doc:name="Set Payload" doc:id="7bce7b3a-ba7b-41d7-b646-1080af1e9884" />
+			<logger level="INFO" doc:name="Logger" doc:id="0b8a8f8c-ded1-45c8-965e-1801f1897e9b" message="#[payload]" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On All Errors Propagate" doc:id="e93f6446-c28a-4f80-b959-562125081ba2">
+			<set-payload value="#[[
+	{
+		errMsg: 'Global Resources : On All Other errrors',
+		errDesc: error.description,
+		errType: error.errorType.namespace as String default 'NO-NS' ++ error.errorType.identifier as String default 'NO-ID'
+	}
+]]" doc:name="Set Payload" doc:id="74f31bed-f7f0-40fa-b6b3-757fcec7a68a" />
+			<logger level="INFO" doc:name="Logger" doc:id="3de82df7-cf3e-4fc8-a7c3-feb9c6ce40ea" message="#[payload]" />
+		</on-error-propagate>
+	</error-handler>
+</mule>

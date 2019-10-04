@@ -1,0 +1,29 @@
+# This file contains properties
+http:
+  host: '0.0.0.0'
+  port: '8081'
+  
+#Derby database properties
+ 
+db: 
+  url: 'jdbc:derby://localhost:1527/memory:training'
+  driverClass: 'org.apache.derby.jdbc.ClientDriver'
+  
+  
+# United REST service properties
+#http://localhost:9090/united/flights
+united:
+  rest:
+    host: 'localhost'
+    port: '9090'
+    basepath: '/united'
+    path: 'flights'
+    
+    
+#Delta SOAP service properties
+delta:
+  soap:
+    wsdl: 'http://localhost:9191/delta?wsdl'
+    service: 'DeltaFlightsService'
+    port: 'DeltaFlightsServiceImplPort'
+    address: 'http://localhost:9191/delta'

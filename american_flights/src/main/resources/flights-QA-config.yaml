@@ -1,0 +1,29 @@
+# This file contains properties
+http:
+  host: '0.0.0.0'
+  port: '8081'
+  
+#mysql american database properties
+ 
+db: 
+  url: 'jdbc:mysql://iltdb.learn.mulesoft.com:3306/training?user=mule&password=mule'
+  driverClass: 'com.mysql.cj.jdbc.Driver'
+  
+  
+# United REST service properties
+#http://ilt.learn.mulesoft.com/united/flights
+united:
+  rest:
+    host: 'ilt.learn.mulesoft.com'
+    port: '80'
+    basepath: '/united'
+    path: 'flights'
+    
+    
+#Delta SOAP service properties
+delta:
+  soap:
+    wsdl: 'http://ilt.learn.mulesoft.com/delta?wsdl'
+    service: 'TicketServiceService'
+    port: 'TicketServicePort'
+    address: 'http://ilt.learn.mulesoft.com/delta'

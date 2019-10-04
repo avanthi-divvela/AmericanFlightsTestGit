@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="dataWeaveFlow" doc:id="c1b8149f-35dc-49fd-a74a-a20d2a69873e" >
+		<http:listener doc:name="GET: dataWeave" doc:id="3565738f-9659-4ecf-81bf-aa0f23d69de1" config-ref="HTTP_Listener_config" path="/dw" allowedMethods="GET"/>
+		<flow-ref doc:name="Flow Reference" doc:id="ea3634da-b1d0-4315-888a-298abf2647e9" name="processMultipleFlights_XML"/>
+		<logger level="INFO" doc:name="Logger" doc:id="57991c67-e5e7-497b-af09-99036b7dabcf" message="#[vars.flight_json]"/>
+	</flow>
+	<flow name="processSingleFlight" doc:id="d6bf4775-30a1-4da6-b0c8-7d8a8be58efd" >
+		<set-payload value="#[output application/json
+---
+readUrl('classpath://examples/flight-example.json','application/json')]" doc:name="Set json Payload" doc:id="2c68decf-b218-434f-93c2-49c97dd9a68e" />
+		<ee:transform doc:name="Transform Message" doc:id="9f7b95f9-9169-4676-b1c7-93aa4d8c035a" >
+			<ee:message >
+				<ee:set-payload resource="dw/payload_java.dwl" />
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dw/flight_json.dwl" variableName="flight_json" />
+				<ee:set-variable resource="dw/flight_xml.dwl" variableName="flight_xml" />
+			</ee:variables>
+		</ee:transform>
+	</flow>
+	<flow name="processMultipleFlights_json" doc:id="781f4198-29c1-4dab-b8ec-e0a01ff2a728" >
+		<set-payload value="#[output application/json
+---
+readUrl('classpath://examples/flights-example.json','application/json')]" doc:name="Set json Payload" doc:id="eec27005-cadd-47d7-b375-fe87823f4627" />
+		<ee:transform doc:name="Transform Message" doc:id="b9c47dfc-20f0-4915-8be4-6bbddec29c75" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+flights: {(
+payload map((value,index) -> {
+	flight: {
+	Carrier: value.airline,
+	code: value.flightCode,
+	toCity: value.toAirportCode,
+	fromCity: value.fromAirportCode
+	}
+})
+)}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="LocalVariables.dwl" variableName="LocalVariable" />
+				<ee:set-variable resource="globalVariables.dwl" variableName="globalVariables" />
+			</ee:variables>
+		</ee:transform>
+	</flow>
+	<flow name="processMultipleFlights_XML" doc:id="bc103d4b-142f-4086-ae0a-de67e23e13a1" >
+		<set-payload value="#[output application/xml
+---
+readUrl('classpath://examples/flights-example.xml', 'application/xml')]" doc:name="Set XML Payload" doc:id="f4940113-2d7e-4092-a9d1-7726fe899505" />
+		<ee:transform doc:name="Transform Message" doc:id="89dfa5d9-a6d3-4ce6-8aba-7bab6407e58c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://soap.training.mulesoft.com/
+---
+payload.ns0#listAllFlightsResponse.*return map((value,index) -> {
+	AirlineName: value.@airlineName,
+	flightCode: value.code,
+	depatureDate: value.departureDate as Date {format: 'yyyy/MM/dd'} as String {format: 'MMM, dd, yyyy'},
+	destination: value.emptySeats,
+	Origination: value.origin,
+	planeType: value.planeType,
+	price: value.price
+}) ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
