@@ -18,7 +18,7 @@
         <price>199.99</price>
     </return>
     <return airlineName="Delta">
-        <code>AFFFC5</code>
+        <code>AFFFC51</code>
         <departureDate>2015/10/21</departureDate>
         <destination>PDX</destination>
         <emptySeats>30</emptySeats>
